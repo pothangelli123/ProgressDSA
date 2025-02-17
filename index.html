@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP Problems Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #1a1a1a;
+        }
+        .day-section {
+            background-color: white;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        .day-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        h1 {
+            color: #1a73e8;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1967d2;
+            margin-top: 0;
+            font-size: 1.8em;
+            border-bottom: 2px solid #e8f0fe;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #444;
+            margin: 20px 0 15px;
+            font-size: 1.3em;
+        }
+        .concepts {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #1a73e8;
+        }
+        .concepts ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .concepts li {
+            margin: 8px 0;
+            color: #444;
+        }
+        .problem-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .problem-item {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .problem-item:hover {
+            background-color: #f8f9fa;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .custom-checkbox-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #1a73e8;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: white;
+        }
+        .problem-item input[type="checkbox"] {
+            opacity: 0;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+        .problem-item input[type="checkbox"]:checked + .custom-checkbox {
+            background-color: #1a73e8;
+            border-color: #1a73e8;
+        }
+        .custom-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            display: none;
+        }
+        .problem-item input[type="checkbox"]:checked + .custom-checkbox::after {
+            display: block;
+        }
+        .problem-label {
+            cursor: pointer;
+            font-size: 1.1em;
+            color: #333;
+            flex-grow: 1;
+        }
+        .progress-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .progress-bar {
+            background-color: #e8f0fe;
+            height: 24px;
+            border-radius: 12px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progress {
+            background: linear-gradient(45deg, #1a73e8, #34a853);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 12px;
+        }
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #1a73e8;
+            font-weight: 500;
+            font-size: 1.1em;
+        }
+        .problem-item.completed {
+            animation: completeAnimation 0.5s ease;
+        }
+        @keyframes completeAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        .problem-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        .code-btn {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+        .code-btn:hover {
+            background: #1557b0;
+        }
+        .code-editor-container {
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .code-editor-container.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .code-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2c3e50;
+            padding: 8px 15px;
+            border-radius: 8px 8px 0 0;
+        }
+        .language-select {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #fff;
+            background: transparent;
+            color: white;
+        }
+        .language-select option {
+            background: #2c3e50;
+        }
+        .save-code-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-code-btn:hover {
+            background: #219a52;
+        }
+        .CodeMirror {
+            height: 200px;
+            border-radius: 0 0 8px 8px;
+        }
+        .problem-header {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 7-Day Dynamic Programming Mastery Plan</h1>
+    <div class="progress-bar">
+        <div class="progress" id="totalProgress"></div>
+    </div>
+    <div class="progress-text" id="progressText">0% Complete</div>
+
+    <div id="problemContainer">
+        <!-- Problems will be dynamically inserted here -->
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
